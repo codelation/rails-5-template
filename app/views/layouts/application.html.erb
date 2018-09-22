@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+ <head>
+   <title>Codelation</title>
+   <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+   <!-- Google Fonts -->
+   <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700%7COswald:400,500" rel="stylesheet">
+ </head>
+
+ <body class="<%= body_class %>">
+   <div class="application-wrap">
+     <%= render partial: "layouts/shared/flash_messages" %>
+     <%= render partial: "layouts/shared/header" %>
+    <main class="application-main">
+      <%= yield %>
+    </main>
+    <%= render partial: "layouts/shared/footer" %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+  </div>
+ </body>
+</html>
