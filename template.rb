@@ -1,6 +1,6 @@
 require 'fileutils'
 require 'shellwords'
-require 'tmpdir'
+
 
 RAILS_REQUIREMENT = '>= 5.2.0.rc1'.freeze
 
@@ -241,6 +241,7 @@ end
 
 def add_template_repository_to_source_path
   if __FILE__ =~ %r{\Ahttps?://}
+    require 'tmpdir'
     source_paths.unshift(tempdir = Dir.mktmpdir('rails-template-'))
     at_exit { FileUtils.remove_entry(tempdir) }
     git clone: [
