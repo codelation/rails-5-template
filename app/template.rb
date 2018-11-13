@@ -8,4 +8,7 @@ copy_file "app/views/layouts/shared/_flash_messages.html.erb"
 
 copy_file "app/assets/stylesheets/application.scss"
 
+copy_file "app/javascript/packs/application.js"
+copy_file "app/javascript/support/application-controller.js"
+
 copy_file "app/services/callable.rb"
