@@ -17,7 +17,7 @@ end
 
 copy_file "config/smtp.rb"
 
-insert_into_file "config/environments/production.rb" do
+insert_into_file "config/environments/production.rb", before: "Rails.application.configure do\n" do
   <<-RUBY
     require Rails.root.join("config/smtp")
   RUBY

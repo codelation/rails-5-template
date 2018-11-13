@@ -48,6 +48,27 @@ def apply_template!
   end
 end
 
+def add_template_repository_to_source_path
+  if __FILE__ =~ %r{\Ahttps?://}
+    require 'tmpdir'
+    source_paths.unshift(tempdir = Dir.mktmpdir('rails-template-'))
+    at_exit { FileUtils.remove_entry(tempdir) }
+    git clone: [
+      '--quiet',
+      'https://github.com/codelation/rails-5-template',
+      tempdir
+    ].map(&:shellescape).join(' ')
+  else
+    source_paths.unshift(File.dirname(__FILE__))
+  end
+end
+
+def gemfile_requirement(name)
+  @original_gemfile ||= IO.read("Gemfile")
+  req = @original_gemfile[/gem\s+['"]#{name}['"]\s*(,[><~= \t\d\.\w'"]*)?.*$/, 1]
+  req && req.gsub("'", %(")).strip.sub(/^,\s*"/, ', "')
+end
+
 def assert_minimum_rails_version
   requirement = Gem::Requirement.new(RAILS_REQUIREMENT)
   rails_version = Gem::Version.new(Rails::VERSION::STRING)
@@ -115,7 +136,7 @@ end
 def setup_gems
   setup_bullet
   setup_active_storage if @active_storage
-  setup_erd
+  # setup_erd
   setup_sidekiq
   setup_rubocop
   setup_brakeman
@@ -171,7 +192,7 @@ end
 
 def setup_devise
   run 'rails generate devise:install'
-  run 'rails g devise:i18n:views'
+  run 'rails g devise:views'
   insert_into_file 'config/routes.rb', after: /draw do\n/ do
     <<-RUBY
   require "sidekiq/web"
@@ -239,25 +260,6 @@ def setup_overcommit
   run 'overcommit --sign'
 end
 
-def add_template_repository_to_source_path
-  if __FILE__ =~ %r{\Ahttps?://}
-    require 'tmpdir'
-    source_paths.unshift(tempdir = Dir.mktmpdir('rails-template-'))
-    at_exit { FileUtils.remove_entry(tempdir) }
-    git clone: [
-      '--quiet',
-      'https://github.com/codelation/rails-5-template',
-      tempdir
-    ].map(&:shellescape).join(' ')
-  else
-    source_paths.unshift(File.dirname(__FILE__))
-  end
-end
 
-def gemfile_requirement(name)
-  @original_gemfile ||= IO.read("Gemfile")
-  req = @original_gemfile[/gem\s+['"]#{name}['"]\s*(,[><~= \t\d\.\w'"]*)?.*$/, 1]
-  req && req.gsub("'", %(")).strip.sub(/^,\s*"/, ', "')
-end
 
 apply_template!
