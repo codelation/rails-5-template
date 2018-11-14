@@ -6,6 +6,7 @@ ruby "<%= RUBY_VERSION %>"
 gem "pg"<%= gemfile_requirement("pg") %>
 gem "puma"<%= gemfile_requirement("puma") %>
 gem "rails", "<%= Rails.version %>"
+gem "sass-rails", "~> 5.0"
 gem "codelation_assets"
 
 gem "uglifier"<%= gemfile_requirement("uglifier") %>
@@ -13,6 +14,7 @@ gem "webpacker"
 
 gem "jbuilder"<%= gemfile_requirement("jbuilder") %>
 gem "redis"<%= gemfile_requirement("redis") %>
+gem "rollbar"
 gem "thor"
 gem "turbolinks"<%= gemfile_requirement("turbolinks") %>
 
@@ -66,8 +68,4 @@ group :test do
   gem "terminal-notifier-guard"
   gem "timecop"
   gem "webmock"
-end
-
-group :production, :staging do
-  gem "rollbar"
 end

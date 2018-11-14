@@ -17,7 +17,7 @@ def apply_template!
   apply "lib/template.rb"
 
   copy_file "Procfile"
-  copy_file "Procfile.dev"
+  copy_file "Procfile.development"
 
   ask_optional_options
 
@@ -146,6 +146,7 @@ def setup_gems
   setup_webpack
   setup_rollbar
   setup_overcommit
+  setup_codelation_assets
 end
 
 def setup_bullet
@@ -168,7 +169,6 @@ end
 
 def setup_sidekiq
   run "bundle binstubs sidekiq"
-  append_to_file "Procfile.dev", "worker: bundle exec sidekiq -C config/sidekiq.yml\n"
   append_to_file "Procfile", "worker: bundle exec sidekiq -C config/sidekiq.yml\n"
 end
 
@@ -186,7 +186,6 @@ end
 def setup_guard
   run "bundle binstubs guard"
   run "guard init livereload bundler"
-  append_to_file "Procfile.dev", "guard: bundle exec guard\n"
   insert_into_file "config/environments/development.rb", "  config.middleware.insert_after ActionDispatch::Static, Rack::LiveReload\n", before: /^end/
 end
 
@@ -202,31 +201,37 @@ def setup_devise
   insert_into_file "config/initializers/devise.rb", "  config.secret_key = Rails.application.credentials.secret_key_base\n", before: /^end/
   if @devise_user
     run "rails g devise User first_name last_name"
-    append_to_file "db/seeds.rb", "User.create!(email: 'user@codelation.com', password: 'password123', first_name: 'Jon', last_name: 'Doe') if Rails.env.development? && User.count.zero?"
+    append_to_file "db/seeds.rb", "User.create!(email: 'user@codelation.com', password: 'password123', first_name: 'Jon', last_name: 'Doe') if Rails.env.development? && User.count.zero?\n"
     insert_into_file "app/controllers/application_controller.rb", "  before_action :authenticate_user!\n", after: /exception\n/
     insert_into_file "app/controllers/pages_controller.rb", "  skip_before_action :authenticate_user!, only: :home\n", after: /ApplicationController\n/
   end
   if @devise_admin_user
     run "rails g devise AdminUser"
-    append_to_file "db/seeds.rb", "AdminUser.create!(email: 'admin@codelation.com', password: 'password123') if Rails.env.development? && AdminUser.count.zero?"
+    append_to_file "db/seeds.rb", "AdminUser.create!(email: 'admin@codelation.com', password: 'password123') if Rails.env.development? && AdminUser.count.zero?\n"
   end
   run "rails g devise:views"
 end
 
 def setup_active_admin
-  run "rails generate active_admin:install"
+  return run "rails generate active_admin:install --skip-users" if @devise_admin_user
+
+  run "rails generate active_admin:install AdminUser"
 end
 
 def setup_webpack
   run "yarn upgrade"
   run "rails webpacker:install"
   run "yarn add stimulus"
+  empty_directory "app/javascript/controllers"
+  copy_file "app/javascript/packs/application.js", force: true
+  copy_file "app/javascript/support/application-controller.js"
   run "yarn add rails-ujs"
 end
 
-# def setup_rollbar
-#   run "rails g rollbar"
-# end
+def setup_rollbar
+  run "rails g rollbar"
+  insert_into_file "config/initializers/rollbar.rb", " || Rails.env.development?\n", after: "if Rails.env.test?"
+end
 
 def git_repo_url
   @git_repo_url ||=
@@ -258,6 +263,11 @@ def setup_overcommit
   run "overcommit --install"
   copy_file ".overcommit.yml", force: true
   run "overcommit --sign"
+end
+
+def setup_codelation_assets
+  remove_file "app/assets/stylesheets/application.css"
+  copy_file "app/helpers/application_helper.rb", force: true
 end
 
 apply_template!
