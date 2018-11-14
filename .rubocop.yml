@@ -24,6 +24,9 @@ Style/StructInheritance:
   Exclude:
     - app/policies/*
 
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
 Rails/InverseOf:
   Enabled: false
 
